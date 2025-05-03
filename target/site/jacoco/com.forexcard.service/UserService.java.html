@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ForexCard</a> &gt; <a href="index.source.html" class="el_package">com.forexcard.service</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package com.forexcard.service;
+
+import com.forexcard.dto.PendingUserDTO;
+import com.forexcard.dto.UserDTO;
+import com.forexcard.model.User;
+import com.forexcard.repo.UserRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+<span class="fc" id="L27">    UserService(PasswordEncoder passwordEncoder) {</span>
+<span class="fc" id="L28">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L29">    }</span>
+
+    // Add/Register a new user
+    public String addUser(User user) {
+        // Check if a user already exists with the same email
+<span class="nc" id="L34">        Optional&lt;User&gt; existingUser = userRepository.findByEmail(user.getEmail());</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        if (existingUser.isPresent()) {</span>
+<span class="nc" id="L36">            return &quot;User already exists with this email&quot;;</span>
+        }
+
+        // If email is unique, encode the password and save the user
+<span class="nc" id="L40">        user.setPassword(passwordEncoder.encode(user.getPassword()));</span>
+<span class="nc" id="L41">        userRepository.save(user);</span>
+<span class="nc" id="L42">        emailService.sendRegistrationSuccessEmail(user.getEmail());</span>
+       
+<span class="nc" id="L44">        return &quot;Register successful&quot;;</span>
+    }
+
+    public UserDTO getUserDTO(Integer id) {
+<span class="nc" id="L48">        return userRepository.findUserDTOById(id);</span>
+    }
+   
+
+    public List&lt;PendingUserDTO&gt; getUsersByAdminAction(String action) {
+<span class="nc" id="L53">        return userRepository.findPendingUserDTOsByAdminAction(action);</span>
+    }
+
+	public PendingUserDTO getUserProfileById(Integer id) {
+<span class="nc" id="L57">		return userRepository.findUserProfileByid(id);</span>
+	}
+	
+	public ResponseEntity&lt;String&gt; updateProfile(User user) {
+<span class="nc" id="L61">        Optional&lt;User&gt; existingUser = userRepository.findById(user.getId());</span>
+        
+<span class="nc" id="L63">        User user1 = existingUser.get();</span>
+        
+<span class="nc" id="L65">        user1.setAddress(user.getAddress());</span>
+<span class="nc" id="L66">        user1.setPhonenumber(user.getPhonenumber());</span>
+<span class="nc" id="L67">        user1.setState(user.getState());</span>
+<span class="nc" id="L68">		userRepository.save(user1); </span>
+		
+<span class="nc" id="L70">		return ResponseEntity.ok(&quot;Update Successful&quot;);</span>
+	}
+	
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
